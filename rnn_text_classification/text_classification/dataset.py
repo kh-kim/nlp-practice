@@ -24,6 +24,8 @@ class TextClassificationDataset(Dataset):
             self.label2idx[label] = idx
             self.idx2label[idx] = label
 
+        self.n_classes = len(self.label2idx)
+
     def __len__(self):
         return len(self.labels)
     
