@@ -4,3 +4,4 @@ tokenizer.json
 *.pth
 wandb
 *.pyc
+checkpoints
