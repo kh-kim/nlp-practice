@@ -26,9 +26,9 @@ def define_config():
     p.add_argument("--model_name", required=True)
     p.add_argument("--train_tsv_fn", required=True)
     p.add_argument("--valid_tsv_fn", required=True)
-    p.add_argument("--test_tsv_fn", required=True)
+    p.add_argument("--test_tsv_fn", type=str, default=None)
     p.add_argument("--tokenizer", default="klue/bert-base")
-    p.add_argument("--output_dir", default="output")
+    p.add_argument("--output_dir", default="checkpoints")
 
     p.add_argument("--gpu_id", type=int, default=-1)
     
@@ -140,14 +140,17 @@ def main(config):
 
     trainer.train(train_loader, valid_loader)
 
-    test_dataset = TextClassificationDataset(config.test_tsv_fn)
-    test_loader = torch.utils.data.DataLoader(
-        test_dataset,
-        batch_size=config.batch_size,
-        shuffle=False,
-        collate_fn=collator,
-    )
-    trainer.test(test_loader)
+    if not config.test_tsv_fn is None:
+        test_dataset = TextClassificationDataset(config.test_tsv_fn)
+        test_loader = torch.utils.data.DataLoader(
+            test_dataset,
+            batch_size=config.batch_size,
+            shuffle=False,
+            collate_fn=collator,
+        )
+        trainer.test(test_loader)
+
+    wandb.finish()
 
 if __name__ == "__main__":
     config = define_config()

@@ -72,7 +72,7 @@ def main(config):
         y = log_prob.argmax(dim=-1)
         # |y| = (batch_size,)
 
-        print("{hyp_class}\t{prob:.4f}\t{input}".format(
+        sys.stdout.write("{hyp_class}\t{prob:.4f}\t{input}\n".format(
             hyp_class=idx2label[y.item()],
             prob=np.exp(log_prob.max(dim=-1)[0].item()),
             input=line,
