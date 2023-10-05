@@ -1,2 +1,6 @@
 data
 tokenizer.json
+*.pt
+*.pth
+wandb
+*.pyc
