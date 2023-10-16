@@ -45,9 +45,10 @@ def main(config):
         n_layers=train_config.n_layers,
         dropout=train_config.dropout,
         pad_idx=tokenizer.pad_token_id,
-    ).to(device)
+    )
     model.load_state_dict(data["model"])
     model.eval()
+    model.to(device)
 
     for line in sys.stdin:
         line = line.strip()
@@ -64,7 +65,7 @@ def main(config):
             x = x.unsqueeze(0)
         # |x| = (batch_size, seq_len)
 
-        x.to(device)
+        x = x.to(device)
 
         log_prob = model(x)
         # |log_prob| = (batch_size, output_dim)

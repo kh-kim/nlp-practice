@@ -164,7 +164,6 @@ def main(config):
     )
 
     trainer.train()
-    trainer.save_model(os.path.join(config.output_dir_path, config.model_name))
 
     wandb.finish()
 
