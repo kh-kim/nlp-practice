@@ -36,7 +36,7 @@ def define_config():
     p.add_argument("--n_epochs", type=int, default=10)
     p.add_argument("--lr", type=float, default=1e-5)
     p.add_argument("--max_grad_norm", type=float, default=5.)
-    p.add_argument("--warmup_steps", type=int, default=500)
+    # p.add_argument("--warmup_steps", type=int, default=500)
     
     p.add_argument("--embedding_dim", type=int, default=256)
     p.add_argument("--hidden_dim", type=int, default=256)
@@ -118,13 +118,13 @@ def main(config):
     ).to(device)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=config.lr)
-    if config.warmup_steps > 0:
-        scheduler = WarmupConstantLRSchedule(
-            optimizer,
-            warmup_steps=config.warmup_steps,
-        )
-    else:
-        scheduler = None
+    # if config.warmup_steps > 0:
+    #     scheduler = WarmupConstantLRSchedule(
+    #         optimizer,
+    #         warmup_steps=config.warmup_steps,
+    #     )
+    # else:
+    #     scheduler = None
 
     criterion = torch.nn.NLLLoss()
 
@@ -133,7 +133,7 @@ def main(config):
         optimizer,
         criterion,
         config,
-        scheduler=scheduler,
+        # scheduler=scheduler,
     )
 
     wandb_init(config)
