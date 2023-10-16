@@ -31,13 +31,13 @@ def get_config():
     p.add_argument("--backbone", type=str, default="klue/roberta-large")
     p.add_argument("--output_dir", type=str, default="checkpoints")
 
-    p.add_argument("--num_train_epochs", type=float, default=1)
+    p.add_argument("--num_train_epochs", type=float, default=3)
     p.add_argument("--learning_rate", type=float, default=1e-4)
     p.add_argument("--warmup_steps", type=int, default=500)
     p.add_argument("--weight_decay", type=float, default=0.01)
     p.add_argument("--lr_scheduler_type", type=str, default="linear")
-    p.add_argument("--batch_size_per_device", type=int, default=64)
-    p.add_argument("--gradient_accumulation_steps", type=int, default=1)
+    p.add_argument("--batch_size_per_device", type=int, default=32)
+    p.add_argument("--gradient_accumulation_steps", type=int, default=8) # 32 * 8 = 256
 
     p.add_argument("--num_logging_steps_per_epoch", type=int, default=100)
     p.add_argument("--num_eval_steps_per_epoch", type=int, default=10)

@@ -33,8 +33,8 @@ def define_config():
     p.add_argument("--gpu_id", type=int, default=-1)
     
     p.add_argument("--batch_size", type=int, default=256)
-    p.add_argument("--n_epochs", type=int, default=10)
-    p.add_argument("--lr", type=float, default=1e-5)
+    p.add_argument("--n_epochs", type=int, default=40)
+    p.add_argument("--lr", type=float, default=1e-4)
     p.add_argument("--max_grad_norm", type=float, default=5.)
     # p.add_argument("--warmup_steps", type=int, default=500)
     
