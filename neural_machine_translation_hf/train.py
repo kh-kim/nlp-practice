@@ -27,7 +27,7 @@ def get_config():
 
     p.add_argument("--src_lang", type=str, required=True, choices=["ko", "en"])
     p.add_argument("--tgt_lang", type=str, required=True, choices=["ko", "en"])
-    p.add_argument("--max_length", type=int, default=512)
+    p.add_argument("--max_length", type=int, default=256)
 
     p.add_argument("--num_train_epochs", type=int, default=2)
     p.add_argument("--learning_rate", type=float, default=2e-5)
