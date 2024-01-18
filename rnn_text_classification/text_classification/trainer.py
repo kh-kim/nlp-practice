@@ -8,12 +8,11 @@ import torch
 
 class Trainer:
 
-    def __init__(self, model, optimizer, criterion, config, scheduler=None):
+    def __init__(self, model, optimizer, criterion, config):
         self.model = model
         self.optimizer = optimizer
         self.criterion = criterion
         self.config = config
-        self.scheduler = scheduler
 
     def _train(self, train_loader):
         # Set model to train mode
@@ -35,8 +34,6 @@ class Trainer:
             )
 
             self.optimizer.step() # Update parameters
-            if self.scheduler is not None:
-                self.scheduler.step() # Update learning rate
 
             epoch_loss += loss.item()
 
@@ -56,7 +53,7 @@ class Trainer:
 
         return epoch_loss / len(valid_loader)
 
-    def train(self, train_loader, valid_loader):
+    def train(self, train_loader, valid_loader, model_name):
         best_valid_loss = float("inf")
 
         for epoch_idx in range(self.config.n_epochs):
@@ -65,10 +62,11 @@ class Trainer:
 
             print(f"Epoch {epoch_idx + 1} | Train Loss: {train_loss:.3f} | Valid Loss: {valid_loss:.3f}")
 
-            wandb.log({
-                "train/loss": train_loss,
-                "valid/loss": valid_loss,
-            })
+            if not self.config.skip_wandb:
+                wandb.log({
+                    "train/loss": train_loss,
+                    "eval/loss": valid_loss,
+                })
 
             # Save best model, if best_valid_loss is updated
             if valid_loss < best_valid_loss:
@@ -78,11 +76,11 @@ class Trainer:
                     "config": self.config,
                     "label2idx": train_loader.dataset.label2idx,
                     "idx2label": train_loader.dataset.idx2label,
-                }, os.path.join(self.config.output_dir, f"{wandb.run.name}.pt"))
+                }, os.path.join(self.config.output_dir, f"{model_name}.pt"))
 
         # Load best model
         self.model.load_state_dict(
-            torch.load(os.path.join(self.config.output_dir, f"{wandb.run.name}.pt"))["model"]
+            torch.load(os.path.join(self.config.output_dir, f"{model_name}.pt"))["model"]
         )
 
         return self.model
@@ -121,7 +119,8 @@ class Trainer:
         print(f"Test Accuracy: {total_correct_cnt / total_sample_cnt * 100:.2f}%")
         print(f"Correct / Total: {total_correct_cnt} / {total_sample_cnt}")
 
-        wandb.log({
-            "test/loss": epoch_loss / len(test_loader),
-            "test/accuracy": total_correct_cnt / total_sample_cnt * 100,
-        })
+        if not self.config.skip_wandb:
+            wandb.log({
+                "test/loss": epoch_loss / len(test_loader),
+                "test/accuracy": total_correct_cnt / total_sample_cnt * 100,
+            })

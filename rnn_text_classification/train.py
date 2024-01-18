@@ -17,7 +17,6 @@ from text_classification.dataset import (
 )
 from text_classification.models.rnn import LSTMClassifier
 from text_classification.trainer import Trainer
-from text_classification.lr_scheduler import WarmupConstantLRSchedule
 
 
 def define_config():
@@ -36,7 +35,6 @@ def define_config():
     p.add_argument("--n_epochs", type=int, default=40)
     p.add_argument("--lr", type=float, default=1e-4)
     p.add_argument("--max_grad_norm", type=float, default=5.)
-    # p.add_argument("--warmup_steps", type=int, default=500)
     
     p.add_argument("--embedding_dim", type=int, default=256)
     p.add_argument("--hidden_dim", type=int, default=256)
@@ -44,6 +42,8 @@ def define_config():
     p.add_argument("--dropout", type=float, default=.3)
 
     p.add_argument("--max_length", type=int, default=256)
+
+    p.add_argument("--skip_wandb", action="store_true")
 
     config = p.parse_args()
 
@@ -68,9 +68,12 @@ def get_device(config):
 def wandb_init(config):
     final_model_name = f"{config.model_name}-{get_now()}"
 
+    if config.skip_wandb:
+        return final_model_name
+
     wandb.login()
     wandb.init(
-        project="text_classification",
+        project="NLP_EXP_rnn_text_classification",
         config=vars(config),
         id=final_model_name,
     )
@@ -78,6 +81,8 @@ def wandb_init(config):
     wandb.run.save()
 
     os.makedirs(config.output_dir, exist_ok=True)
+
+    return final_model_name
 
 def main(config):
     device = get_device(config)
@@ -118,13 +123,6 @@ def main(config):
     ).to(device)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=config.lr)
-    # if config.warmup_steps > 0:
-    #     scheduler = WarmupConstantLRSchedule(
-    #         optimizer,
-    #         warmup_steps=config.warmup_steps,
-    #     )
-    # else:
-    #     scheduler = None
 
     criterion = torch.nn.NLLLoss()
 
@@ -133,12 +131,15 @@ def main(config):
         optimizer,
         criterion,
         config,
-        # scheduler=scheduler,
     )
 
-    wandb_init(config)
+    final_model_name = wandb_init(config)
 
-    trainer.train(train_loader, valid_loader)
+    trainer.train(
+        train_loader,
+        valid_loader,
+        model_name=final_model_name,
+    )
 
     if not config.test_tsv_fn is None:
         test_dataset = TextClassificationDataset(config.test_tsv_fn)
@@ -150,7 +151,8 @@ def main(config):
         )
         trainer.test(test_loader)
 
-    wandb.finish()
+    if not config.skip_wandb:
+        wandb.finish()
 
 if __name__ == "__main__":
     config = define_config()
