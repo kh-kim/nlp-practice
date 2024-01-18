@@ -40,14 +40,16 @@ def get_config():
     p.add_argument("--gradient_accumulation_steps", type=int, default=8) # 32 * 8 = 256
 
     p.add_argument("--num_logging_steps_per_epoch", type=int, default=100)
-    p.add_argument("--num_eval_steps_per_epoch", type=int, default=10)
-    p.add_argument("--num_save_steps_per_epoch", type=int, default=10)
+    p.add_argument("--num_eval_steps_per_epoch", type=int, default=2)
+    p.add_argument("--num_save_steps_per_epoch", type=int, default=2)
     p.add_argument("--save_total_limit", type=int, default=3)
 
     p.add_argument("--fp16", action="store_true")
     p.add_argument("--amp_backend", type=str, default="auto")
 
     p.add_argument("--max_length", type=int, default=256)
+
+    p.add_argument("--skip_wandb", action="store_true")
 
     config = p.parse_args()
 
@@ -61,9 +63,12 @@ def get_now():
 def wandb_init(config):
     final_model_name = f"{config.model_name}-{get_now()}"
 
+    if config.skip_wandb:
+        return final_model_name
+
     wandb.login()
     wandb.init(
-        project="text_classification",
+        project="NLP_EXP_bert_text_classification",
         config=vars(config),
         id=final_model_name,
     )
@@ -115,7 +120,7 @@ def main(config):
         fp16_full_eval=config.fp16,
         half_precision_backend=config.amp_backend,
         load_best_model_at_end=True,
-        report_to="wandb",
+        report_to="wandb" if not config.skip_wandb else None,
         run_name=final_model_name,
     )
 
@@ -179,12 +184,13 @@ def main(config):
         print(f"Test Accuracy: {total_correct_cnt / total_sample_cnt * 100:.2f}%")
         print(f"Correct / Total: {total_correct_cnt} / {total_sample_cnt}")
 
-        wandb.log({
-            "test/accuracy": total_correct_cnt / total_sample_cnt * 100,
-        })
+        if not config.skip_wandb:
+            wandb.log({
+                "test/accuracy": total_correct_cnt / total_sample_cnt * 100,
+            })
 
-
-    wandb.finish()
+    if not config.skip_wandb:
+        wandb.finish()
 
 
 if __name__ == "__main__":
