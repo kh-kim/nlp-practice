@@ -149,6 +149,8 @@ def main(config):
         save_total_limit=config.save_total_limit,
         bf16=config.fp16,
         bf16_full_eval=config.fp16,
+        # fp16=config.fp16,
+        # fp16_full_eval=config.fp16,
         half_precision_backend=config.amp_backend,
         eval_steps=eval_steps,
         load_best_model_at_end=True,

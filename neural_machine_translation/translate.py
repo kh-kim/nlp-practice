@@ -5,9 +5,13 @@ from tqdm import tqdm
 
 import torch
 
-from transformers import T5TokenizerFast
-from transformers import T5ForConditionalGeneration
-from transformers import GenerationConfig
+from transformers import (
+    T5TokenizerFast,
+    T5ForConditionalGeneration,
+    AutoTokenizer,
+    AutoModelForSeq2SeqLM,
+    GenerationConfig,
+)
 
 
 def argparser():
@@ -63,8 +67,12 @@ def get_tokenizer(tokenizer_name, tokenizer_base_dir):
 if __name__ == "__main__":
     config = argparser()
 
-    model = load_checkpoint(config.model_name, config.checkpoint_base_dir)
-    tokenizer = get_tokenizer(config.tokenizer_name, config.tokenizer_base_dir)
+    try:
+        model = AutoModelForSeq2SeqLM.from_pretrained(config.model_name)
+        tokenizer = AutoTokenizer.from_pretrained(config.tokenizer_name)
+    except:
+        model = load_checkpoint(config.model_name, config.checkpoint_base_dir)
+        tokenizer = get_tokenizer(config.tokenizer_name, config.tokenizer_base_dir)
 
     if config.gpu_id >= 0:
         device = torch.device(f"cuda:{config.gpu_id}")
